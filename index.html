@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Alicia Albelo">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>Alicia Albelo — Calculadora de Precios</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0A0A0A;--white:#FFFFFF;--gold:#C9A96E;--gold-light:#E8D5B0;--gray:#F5F5F5;--gray-mid:#E0E0E0;--gray-dark:#888888;--red:#C0392B;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--black);min-height:100vh;}
+.hidden{display:none!important;}
+
+/* ── LAYOUT RESPONSIVE ── */
+#screen-login{display:none;min-height:100vh;background:var(--black);align-items:center;justify-content:center;padding:40px 32px;position:relative;overflow:hidden;}
+#screen-login.active{display:flex;}
+#screen-login::before{content:'';position:absolute;top:-100px;right:-100px;width:350px;height:350px;border-radius:50%;border:1px solid rgba(201,169,110,0.15);}
+#screen-login::after{content:'';position:absolute;bottom:-80px;left:-80px;width:250px;height:250px;border-radius:50%;border:1px solid rgba(201,169,110,0.1);}
+.login-inner{width:100%;max-width:420px;position:relative;z-index:1;}
+.login-logo{text-align:center;margin-bottom:60px;}
+.login-logo-line{width:40px;height:1px;background:var(--gold);margin:12px auto;}
+.login-logo h1{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:var(--white);letter-spacing:4px;text-transform:uppercase;}
+.login-logo p{font-size:11px;color:var(--gold);letter-spacing:4px;text-transform:uppercase;}
+.login-form label{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gray-dark);margin-bottom:10px;}
+.login-form input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(201,169,110,0.3);padding:16px 20px;font-family:'DM Sans',sans-serif;font-size:18px;letter-spacing:6px;color:var(--white);text-transform:uppercase;text-align:center;outline:none;transition:border-color 0.3s;margin-bottom:24px;border-radius:0;}
+.login-form input:focus{border-color:var(--gold);}
+.login-form input::placeholder{color:rgba(255,255,255,0.2);letter-spacing:4px;font-size:14px;}
+.btn-primary{width:100%;background:var(--gold);color:var(--black);border:none;padding:18px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:3px;text-transform:uppercase;cursor:pointer;}
+.login-hint{text-align:center;margin-top:24px;font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8;}
+
+/* APP SHELL */
+#app-wrapper{display:none;min-height:100vh;flex-direction:column;}
+#app-wrapper.active{display:flex;}
+
+.app-header{background:var(--black);padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;height:64px;}
+.header-brand h2{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--white);letter-spacing:2px;text-transform:uppercase;}
+.header-brand span{font-size:9px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;}
+.header-right{display:flex;align-items:center;gap:16px;}
+.header-code{font-size:10px;color:var(--gray-dark);letter-spacing:2px;background:rgba(255,255,255,0.05);padding:4px 12px;border:1px solid rgba(255,255,255,0.1);}
+
+/* DESKTOP LAYOUT */
+.app-body{display:flex;flex:1;min-height:0;}
+
+/* SIDEBAR NAV (desktop) */
+.sidebar-nav{width:200px;background:var(--black);flex-shrink:0;padding:24px 0;display:flex;flex-direction:column;gap:4px;position:sticky;top:64px;height:calc(100vh - 64px);}
+.sidebar-item{display:flex;align-items:center;gap:12px;padding:14px 24px;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all 0.2s;border-left:2px solid transparent;}
+.sidebar-item svg{width:18px;height:18px;stroke:var(--gray-dark);flex-shrink:0;}
+.sidebar-item span{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gray-dark);}
+.sidebar-item.active{border-left-color:var(--gold);background:rgba(255,255,255,0.04);}
+.sidebar-item.active svg{stroke:var(--gold);}
+.sidebar-item.active span{color:var(--white);}
+
+/* CONTENT AREA */
+.content-area{flex:1;overflow-y:auto;min-width:0;}
+.screen{display:none;padding:40px;max-width:860px;}
+.screen.active{display:block;}
+
+/* BOTTOM NAV (mobile only) */
+.bottom-nav{display:none;background:var(--black);border-top:1px solid rgba(255,255,255,0.08);}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar-nav{display:none;}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 8px 16px;cursor:pointer;gap:4px;border:none;background:none;}
+  .nav-item svg{width:20px;height:20px;stroke:var(--gray-dark);}
+  .nav-item span{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gray-dark);}
+  .nav-item.active svg{stroke:var(--gold);}
+  .nav-item.active span{color:var(--gold);}
+  .screen{padding:20px 16px 100px;}
+  .app-header{padding:0 16px;}
+}
+
+/* DASHBOARD GRID */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0;}
+@media(max-width:600px){.dash-grid{grid-template-columns:1fr 1fr;}}
+.dash-greeting{margin-bottom:32px;}
+.dash-greeting p{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gray-dark);margin-bottom:6px;}
+.dash-greeting h2{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;}
+.dash-action{background:var(--black);padding:28px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;transition:opacity 0.2s;}
+.dash-action:hover{opacity:0.9;}
+.dash-action-text h3{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--white);margin-bottom:4px;}
+.dash-action-text p{font-size:12px;color:var(--gray-dark);}
+.dash-action-icon{width:48px;height:48px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dash-action-icon svg{width:22px;height:22px;stroke:var(--black);}
+.stat-card{background:var(--gray);padding:24px 20px;}
+.stat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-dark);margin-bottom:8px;}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;}
+.stat-sub{font-size:10px;color:var(--gray-dark);margin-top:4px;}
+
+/* CALC LAYOUT (desktop: 2 col) */
+.calc-layout{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}
+@media(max-width:768px){.calc-layout{grid-template-columns:1fr;}}
+.calc-col{}
+
+/* RESULT LAYOUT */
+.result-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+@media(max-width:768px){.result-layout{grid-template-columns:1fr;}}
+.result-hero{background:var(--black);padding:40px 32px;text-align:center;position:relative;overflow:hidden;margin-bottom:24px;}
+.result-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;border:1px solid rgba(201,169,110,0.2);}
+.result-hero-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;position:relative;}
+.result-hero-price{font-family:'Cormorant Garamond',serif;font-size:60px;font-weight:300;color:var(--white);position:relative;line-height:1;margin-bottom:6px;}
+.result-hero-sub{font-size:12px;color:var(--gray-dark);position:relative;}
+.result-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+.result-card{border:1px solid var(--gray-mid);padding:20px;}
+.result-card-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-dark);margin-bottom:10px;}
+.result-card-price{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--black);}
+.result-card-sub{font-size:10px;color:var(--gray-dark);margin-top:4px;}
+.result-card.gold{border-color:var(--gold);background:rgba(201,169,110,0.05);}
+.result-card.gold .result-card-price{color:var(--gold);}
+.cuotas-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;}
+.cuota-card{border:1px solid var(--gray-mid);padding:16px 12px;text-align:center;}
+.c-num{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-dark);margin-bottom:8px;}
+.c-price{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--black);}
+.c-total{font-size:10px;color:var(--gray-dark);margin-top:4px;}
+.result-breakdown{background:var(--gray);padding:24px;}
+.breakdown-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-mid);font-size:13px;}
+.breakdown-row:last-child{border-bottom:none;}
+.breakdown-row.total{font-weight:500;padding-top:14px;border-top:1px solid var(--black);border-bottom:none;}
+.breakdown-row span:first-child{color:var(--gray-dark);}
+
+/* NEGOCIO GRID */
+.negocio-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+@media(max-width:768px){.negocio-grid{grid-template-columns:1fr;}}
+
+/* SHARED */
+.section-title{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gray-dark);margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--gray-mid);}
+.form-group{margin-bottom:20px;}
+.form-label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-dark);margin-bottom:8px;}
+.form-label.required::after{content:' *';color:var(--gold);}
+.form-hint{font-size:10px;color:var(--gold);margin-top:4px;line-height:1.6;}
+.form-input,.form-select{width:100%;border:1px solid var(--gray-mid);padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--black);background:var(--white);outline:none;transition:border-color 0.2s;appearance:none;border-radius:0;}
+.form-input:focus,.form-select:focus{border-color:var(--black);}
+.form-input.error{border-color:var(--red);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.input-prefix{position:relative;}
+.input-prefix .psym{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--gray-dark);pointer-events:none;}
+.input-prefix input{padding-left:28px;}
+select.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+.toggle-group{display:flex;border:1px solid var(--gray-mid);overflow:hidden;}
+.toggle-btn{flex:1;padding:12px 8px;border:none;background:var(--white);font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gray-dark);cursor:pointer;transition:all 0.2s;border-right:1px solid var(--gray-mid);}
+.toggle-btn:last-child{border-right:none;}
+.toggle-btn.active{background:var(--black);color:var(--white);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.chip{padding:8px 16px;border:1px solid var(--gray-mid);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;background:var(--white);color:var(--black);}
+.chip.active{background:var(--black);color:var(--white);border-color:var(--black);}
+
+/* OTROS GASTOS */
+.otros-container{margin-bottom:8px;}
+.otro-item{margin-bottom:10px;animation:fadeIn 0.2s ease;}
+.otro-row1{display:grid;grid-template-columns:1fr 36px;gap:8px;margin-bottom:6px;}
+.otro-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.otro-select{border:1px solid var(--gray-mid);padding:11px 28px 11px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);background:var(--white);outline:none;appearance:none;border-radius:0;width:100%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.otro-monto{border:1px solid var(--gray-mid);padding:11px 10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--black);background:var(--white);outline:none;border-radius:0;width:100%;text-align:right;}
+.otro-remove{width:36px;height:42px;border:none;background:none;color:var(--gray-dark);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.otro-tipo-toggle{display:flex;border:1px solid var(--gray-mid);overflow:hidden;}
+.otro-tipo-btn{flex:1;padding:9px 6px;border:none;background:var(--white);font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gray-dark);cursor:pointer;border-right:1px solid var(--gray-mid);}
+.otro-tipo-btn:last-child{border-right:none;}
+.otro-tipo-btn.active{background:var(--black);color:var(--white);}
+.btn-add{width:100%;border:1px dashed var(--gray-mid);background:none;padding:12px;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-dark);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;margin-bottom:24px;}
+.btn-add:hover{border-color:var(--gold);color:var(--gold);}
+.btn-add svg{width:14px;height:14px;stroke:currentColor;}
+
+/* MEDIOS CUSTOM */
+.medio-custom-card{background:var(--gray);padding:16px;margin-bottom:12px;border-left:3px solid var(--gold);}
+.mc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.mc-nombre-input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--black);outline:none;flex:1;min-width:0;}
+.mc-remove{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;line-height:1;flex-shrink:0;}
+.mc-rates{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.rate-field label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gray-dark);display:block;margin-bottom:4px;}
+.rate-field input{width:100%;border:1px solid var(--gray-mid);padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--black);background:var(--white);outline:none;border-radius:0;text-align:center;}
+
+/* ITEMS */
+.items-grid{display:grid;gap:12px;}
+@media(min-width:769px){.items-grid{grid-template-columns:1fr 1fr;}}
+.item-card{border:1px solid var(--gray-mid);padding:20px;cursor:pointer;transition:border-color 0.2s;}
+.item-card:hover{border-color:var(--black);}
+.item-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.item-left h4{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin-bottom:2px;}
+.item-left p{font-size:11px;color:var(--gray-dark);}
+.item-right .price{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--gold);text-align:right;}
+.item-right .cost{font-size:11px;color:var(--gray-dark);text-align:right;}
+.item-proveedor{font-size:11px;color:var(--gray-dark);padding-top:10px;border-top:1px solid var(--gray);margin-top:10px;display:flex;align-items:center;gap:6px;}
+.item-proveedor svg{width:12px;height:12px;stroke:var(--gray-dark);flex-shrink:0;}
+
+/* CONFIG SECTIONS */
+.config-section{background:var(--gray);padding:24px;margin-bottom:16px;}
+.config-section-title{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--black);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--gray-mid);}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:20px;}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--gray-dark);}
+.search-input{width:100%;border:1px solid var(--gray-mid);padding:12px 12px 12px 42px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--black);background:var(--white);outline:none;border-radius:0;}
+
+/* BUTTONS */
+.btn-full{width:100%;background:var(--black);color:var(--white);border:none;padding:18px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;}
+.btn-outline{width:100%;background:transparent;color:var(--black);border:1px solid var(--black);padding:16px;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;}
+.btn-gold{background:var(--gold);color:var(--black);border:none;width:100%;padding:18px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-bottom:16px;}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);width:100%;padding:14px;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:80px 20px;}
+.empty-state svg{width:48px;height:48px;stroke:var(--gray-mid);margin-bottom:20px;}
+.empty-state h3{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--gray-dark);margin-bottom:8px;}
+.empty-state p{font-size:12px;color:var(--gray-dark);line-height:1.6;}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--black);color:var(--white);padding:12px 28px;font-size:12px;letter-spacing:1px;border-left:3px solid var(--gold);opacity:0;transition:opacity 0.3s;z-index:999;white-space:nowrap;max-width:90%;}
+.toast.show{opacity:1;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--white);width:100%;max-width:500px;padding:36px;max-height:90vh;overflow-y:auto;margin:16px;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;margin-bottom:4px;}
+.modal-sub{font-size:11px;color:var(--gray-dark);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;}
+.modal-close{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-dark);margin-top:-4px;}
+.error-msg{font-size:11px;color:var(--red);margin-top:4px;display:none;}
+.error-msg.show{display:block;}
+.fade-in{animation:fadeIn 0.25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login" class="active">
+  <div class="login-inner">
+    <div class="login-logo">
+      <div class="login-logo-line"></div>
+      <h1>Alicia Albelo</h1>
+      <p>Calculadora de precios</p>
+      <div class="login-logo-line"></div>
+    </div>
+    <div class="login-form">
+      <label>Ingresá tu código de acceso</label>
+      <input type="text" id="code-input" placeholder="ALB-0000" maxlength="8">
+      <button class="btn-primary" onclick="handleLogin()">Ingresar</button>
+      <p class="login-hint">¿No tenés código?<br>Adquirí la calculadora en <span style="color:var(--gold)">aliciaalbelo.com</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrapper">
+  <div class="app-header">
+    <div class="header-brand">
+      <h2 id="header-marca">Alicia Albelo</h2>
+      <span>Calculadora de precios</span>
+    </div>
+    <div class="header-right">
+      <div class="header-code" id="header-code">ALB-0000</div>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <nav class="sidebar-nav">
+      <button class="sidebar-item active" onclick="showScreen('dashboard')" id="snav-dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Inicio</span>
+      </button>
+      <button class="sidebar-item" onclick="showScreen('nuevo-item')" id="snav-nuevo-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span>Calcular</span>
+      </button>
+      <button class="sidebar-item" onclick="showScreen('items')" id="snav-items">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span>Productos</span>
+      </button>
+      <button class="sidebar-item" onclick="showScreen('negocio')" id="snav-negocio">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>Mi Negocio</span>
+      </button>
+    </nav>
+
+    <!-- SCREENS -->
+    <div class="content-area">
+
+      <!-- DASHBOARD -->
+      <div id="screen-dashboard" class="screen active fade-in">
+        <div class="dash-greeting">
+          <p>Bienvenida de nuevo</p>
+          <h2 id="dash-name">Tu marca</h2>
+        </div>
+        <div class="dash-action" onclick="showScreen('nuevo-item')">
+          <div class="dash-action-text">
+            <h3>Nuevo Cálculo</h3>
+            <p>Calculá el precio de tu producto</p>
+          </div>
+          <div class="dash-action-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="stat-card">
+            <div class="stat-label">Productos calculados</div>
+            <div class="stat-value" id="stat-items">0</div>
+            <div class="stat-sub">en total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Margen promedio</div>
+            <div class="stat-value" id="stat-margen">—</div>
+            <div class="stat-sub">sobre costo</div>
+          </div>
+        </div>
+        <p class="section-title">Últimos cálculos</p>
+        <div class="items-grid" id="dash-recientes"></div>
+      </div>
+
+      <!-- CALCULAR -->
+      <div id="screen-nuevo-item" class="screen fade-in">
+        <div class="calc-layout">
+          <div class="calc-col">
+            <p class="section-title">Producto</p>
+            <div class="form-group">
+              <label class="form-label required">Nombre del producto / prenda</label>
+              <input type="text" class="form-input" id="np-nombre" placeholder="Ej: Buzo oversize negro">
+              <div class="error-msg" id="err-nombre">Completá el nombre</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Proveedor</label>
+              <input type="text" class="form-input" id="np-proveedor" placeholder="Ej: Local 42, Galería Río">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Costo de compra</label>
+              <div class="input-prefix"><span class="psym">$</span>
+                <input type="text" class="form-input" id="np-costo" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+              </div>
+              <div class="error-msg" id="err-costo">Ingresá el costo</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Flete del proveedor</label>
+              <div class="input-prefix"><span class="psym">$</span>
+                <input type="text" class="form-input" id="np-flete" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+              </div>
+            </div>
+
+            <p class="section-title">Otros gastos</p>
+            <div class="otros-container" id="otros-calc"></div>
+            <button class="btn-add" onclick="addOtroCalc()">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar otro gasto
+            </button>
+          </div>
+
+          <div class="calc-col">
+            <p class="section-title">Canal y cobro</p>
+            <div class="form-group">
+              <label class="form-label">Canal de venta</label>
+              <div class="chips" id="canal-chips">
+                <div class="chip active" data-val="whatsapp" onclick="selChip(this,'canal-chips')">WhatsApp</div>
+                <div class="chip" data-val="local" onclick="selChip(this,'canal-chips')">Local</div>
+                <div class="chip" data-val="showroom" onclick="selChip(this,'canal-chips')">Showroom</div>
+                <div class="chip" data-val="online" onclick="selChip(this,'canal-chips')">Tienda Online</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Medio de cobro</label>
+              <div class="chips" id="pago-chips">
+                <div class="chip active" data-val="efectivo" onclick="selPago(this)">Efectivo</div>
+                <div class="chip" data-val="transferencia" onclick="selPago(this)">Transferencia</div>
+                <div class="chip" data-val="mp_debito" onclick="selPago(this)">MP Débito</div>
+                <div class="chip" data-val="mp_credito" onclick="selPago(this)">MP Crédito</div>
+                <div class="chip" data-val="mp_qr" onclick="selPago(this)">MP QR</div>
+                <div class="chip" data-val="mp_link" onclick="selPago(this)">MP Link</div>
+              </div>
+              <div id="chips-custom-pago" class="chips" style="margin-top:8px"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Margen de ganancia</label>
+              <div class="toggle-group" id="margen-group">
+                <button class="toggle-btn" onclick="selMargen(this,80)">80%</button>
+                <button class="toggle-btn active" onclick="selMargen(this,100)">100%</button>
+                <button class="toggle-btn" onclick="selMargen(this,130)">130%</button>
+                <button class="toggle-btn" onclick="selMargen(this,150)">150%</button>
+              </div>
+              <p class="form-hint">Seleccionado: <span id="margen-label">100%</span></p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">¿Incluir envío al cliente?</label>
+              <div class="toggle-group">
+                <button class="toggle-btn active" id="envio-no" onclick="togEnvio(false)">No</button>
+                <button class="toggle-btn" id="envio-si" onclick="togEnvio(true)">Sí</button>
+              </div>
+            </div>
+            <div id="envio-campo" class="form-group hidden">
+              <label class="form-label">Costo de envío al cliente</label>
+              <div class="input-prefix"><span class="psym">$</span>
+                <input type="text" class="form-input" id="np-envio" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+              </div>
+            </div>
+            <button class="btn-gold" onclick="calcular()">Calcular precio →</button>
+            <button class="btn-outline" onclick="showScreen('dashboard')">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTADO -->
+      <div id="screen-resultado" class="screen fade-in">
+        <div class="result-hero">
+          <div class="result-hero-label">Precio de lista recomendado</div>
+          <div class="result-hero-price" id="res-lista">$0</div>
+          <div class="result-hero-sub" id="res-nombre">—</div>
+        </div>
+        <div class="result-layout">
+          <div>
+            <div class="result-cards">
+              <div class="result-card gold">
+                <div class="result-card-label">Precio contado</div>
+                <div class="result-card-price" id="res-contado">$0</div>
+                <div class="result-card-sub">sin recargo</div>
+              </div>
+              <div class="result-card">
+                <div class="result-card-label">Precio lista</div>
+                <div class="result-card-price" id="res-lista2">$0</div>
+                <div class="result-card-sub">contado +10%</div>
+              </div>
+            </div>
+            <p class="section-title">Cuotas con tarjeta</p>
+            <div class="cuotas-grid" id="cuotas-grid"></div>
+            <button class="btn-full" onclick="guardarItem()">Guardar producto</button>
+            <button class="btn-outline" onclick="showScreen('nuevo-item')">← Modificar</button>
+          </div>
+          <div>
+            <p class="section-title">Desglose de costos</p>
+            <div class="result-breakdown" id="res-breakdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIS PRODUCTOS -->
+      <div id="screen-items" class="screen fade-in">
+        <p class="section-title">Mis productos</p>
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-input" id="search-input" placeholder="Buscar por nombre o proveedor..." oninput="filtrar()">
+        </div>
+        <div class="items-grid" id="items-list"></div>
+      </div>
+
+      <!-- MI NEGOCIO -->
+      <div id="screen-negocio" class="screen fade-in">
+        <p class="section-title">Mi negocio</p>
+        <div class="negocio-grid">
+          <div>
+            <!-- MARCA -->
+            <div class="config-section">
+              <div class="config-section-title">Tu marca</div>
+              <div class="form-group">
+                <label class="form-label required">¿Cómo se llama tu marca?</label>
+                <input type="text" class="form-input" id="cfg-marca" placeholder="Ej: BESA, Sofía Indumentaria">
+              </div>
+            </div>
+
+            <!-- SUELDO -->
+            <div class="config-section">
+              <div class="config-section-title">Sueldo pretendido</div>
+              <div class="form-group">
+                <label class="form-label required">Sueldo mensual que querés pagarte</label>
+                <div class="input-prefix"><span class="psym">$</span>
+                  <input type="text" class="form-input" id="cfg-sueldo" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label required">Productos que vendés por mes</label>
+                <input type="number" class="form-input" id="cfg-unidades" placeholder="Ej: 50" inputmode="numeric" onfocus="clearFocus(this)">
+                <div class="error-msg" id="err-unidades">Este campo es obligatorio</div>
+              </div>
+            </div>
+
+            <!-- GASTOS FIJOS -->
+            <div class="config-section">
+              <div class="config-section-title">Gastos fijos mensuales</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Alquiler / showroom</label>
+                  <div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="cfg-alquiler" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Servicios</label>
+                  <div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="cfg-servicios" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sueldos de empleados</label>
+                <div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="cfg-empleados" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Packaging</label>
+                  <div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="cfg-packaging" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Publicidad / Ads</label>
+                  <div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="cfg-publicidad" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Contador / gestoría</label>
+                  <div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="cfg-contador" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Plataformas / apps</label>
+                  <div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="cfg-plataformas" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+                </div>
+              </div>
+              <p class="section-title" style="margin-top:8px">Otros gastos fijos</p>
+              <div id="otros-fijos-cont"></div>
+              <button class="btn-add" onclick="addOtroFijo()">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Agregar otro gasto fijo
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <!-- FISCAL -->
+            <div class="config-section">
+              <div class="config-section-title">Situación fiscal</div>
+              <div class="form-group">
+                <div class="toggle-group">
+                  <button class="toggle-btn active" id="fiscal-mono" onclick="selFiscal('mono')">Monotributo</button>
+                  <button class="toggle-btn" id="fiscal-ri" onclick="selFiscal('ri')">Resp. Inscripta</button>
+                  <button class="toggle-btn" id="fiscal-no" onclick="selFiscal('no')">No inscripta</button>
+                </div>
+              </div>
+              <div id="bloque-mono" class="form-group">
+                <label class="form-label">Cuota mensual que pagás</label>
+                <div class="input-prefix"><span class="psym">$</span>
+                  <input type="text" class="form-input" id="cfg-cuota-mono" placeholder="0,00" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+                </div>
+              </div>
+              <div id="bloque-ri" class="hidden">
+                <div style="background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.3);padding:16px;">
+                  <p style="font-size:12px;color:var(--black);line-height:1.7"><strong>IVA 21%</strong> se agrega automáticamente al precio final.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- MP -->
+            <div class="config-section">
+              <div class="config-section-title">Comisiones Mercado Pago</div>
+              <p style="font-size:11px;color:var(--gray-dark);margin-bottom:16px;line-height:1.7">Valores 2025/2026. Editables si accedés a mejores condiciones.</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Débito (%)</label>
+                  <input type="text" class="form-input" id="cfg-mp-deb" value="3,41" inputmode="decimal" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Crédito 1c (%)</label>
+                  <input type="text" class="form-input" id="cfg-mp-cred1" value="6,60" inputmode="decimal" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">QR (%)</label>
+                  <input type="text" class="form-input" id="cfg-mp-qr" value="0,80" inputmode="decimal" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Link de pago (%)</label>
+                  <input type="text" class="form-input" id="cfg-mp-link" value="6,60" inputmode="decimal" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+                </div>
+              </div>
+              <p class="section-title" style="margin-top:4px">Recargo cuotas</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">3 cuotas (%)</label>
+                  <input type="text" class="form-input" id="cfg-c3" value="15" inputmode="decimal" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">6 cuotas (%)</label>
+                  <input type="text" class="form-input" id="cfg-c6" value="30" inputmode="decimal" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">12 cuotas (%)</label>
+                <input type="text" class="form-input" id="cfg-c12" value="60" inputmode="decimal" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)" style="max-width:48%">
+              </div>
+            </div>
+
+            <!-- OTROS MEDIOS -->
+            <div class="config-section">
+              <div class="config-section-title">Otras promociones bancarias</div>
+              <p style="font-size:11px;color:var(--gray-dark);margin-bottom:16px;line-height:1.7">Agregá bancos o billeteras con sus propias comisiones. Aparecerán como opciones al calcular.</p>
+              <div id="medios-custom-cont"></div>
+              <button class="btn-add" onclick="addMedioCustom()">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Agregar banco / billetera
+              </button>
+            </div>
+
+            <button class="btn-full" onclick="guardarConfig()">Guardar configuración</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- content-area -->
+  </div><!-- app-body -->
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="showScreen('dashboard')" id="mnav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Inicio</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('nuevo-item')" id="mnav-nuevo-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span>Calcular</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('items')" id="mnav-items">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Productos</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('negocio')" id="mnav-negocio">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Mi Negocio</span>
+    </button>
+  </nav>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal-box">
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-title" id="modal-titulo">Editar producto</div>
+    <div class="modal-sub" id="modal-sub">—</div>
+    <div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-input" id="edit-nombre"></div>
+    <div class="form-group"><label class="form-label">Proveedor</label><input type="text" class="form-input" id="edit-proveedor"></div>
+    <div class="form-group"><label class="form-label">Costo de compra</label><div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="edit-costo" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div></div>
+    <div class="form-group"><label class="form-label">Precio de lista</label><div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="edit-lista" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div></div>
+    <div class="form-group"><label class="form-label">Precio contado</label><div class="input-prefix"><span class="psym">$</span><input type="text" class="form-input" id="edit-contado" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div></div>
+    <button class="btn-full" onclick="guardarEdicion()">Guardar cambios</button>
+    <button class="btn-danger" onclick="eliminarItem()">Eliminar producto</button>
+    <button class="btn-outline" onclick="cerrarModal()">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const OTROS_CALC_OPTS=['Seleccioná un gasto','Comisión vendedora','Comisión comisionista','Mantenimiento local','Ropa de trabajo / uniforme','Packaging extra','Etiquetas e impresiones','Fotografía de producto','Transporte / movilidad','Merma / fallas del producto','Devoluciones','Almacenamiento / depósito','Gastos de cobranza','Otro (personalizado)'];
+const OTROS_FIJOS_OPTS=['Seleccioná un gasto','Canva Pro','Adobe Creative Cloud','Google Drive / Workspace','Tiendanube','Shopify','Mercado Shops','Instagram / Facebook Ads','Google Ads','Seguro del local','Seguro de mercadería','Obra social / prepaga','Auto / nafta','Uber / traslados','Teléfono / internet','Correo / mensajería','Mantenimiento','Suscripciones varias','Otro (personalizado)'];
+
+// Gastos que admiten % o fijo
+const OPTS_CON_TIPO=['Comisión vendedora','Comisión comisionista'];
+
+let store=null,calculo=null,margenActual=100,envioActivo=false,fiscalActual='mono',editItemId=null;
+let cCalc=0,cFijo=0,cMedio=0;
+
+// STORAGE
+function getStore(code){
+  const r=localStorage.getItem('alb_'+code);
+  if(r) return JSON.parse(r);
+  return {code,marca:'',config:{sueldo:0,unidades:0,alquiler:0,servicios:0,empleados:0,packaging:0,publicidad:0,plataformas:0,contador:0,fiscal:'mono',cuotaMono:0,mp_deb:3.41,mp_cred1:6.60,mp_qr:0.80,mp_link:6.60,c3:15,c6:30,c12:60,otrosFijos:[],mediosCustom:[]},items:[]};
+}
+function save(){localStorage.setItem('alb_'+store.code,JSON.stringify(store));}
+
+// FORMATO
+function parseMiles(s){if(!s) return 0;return parseFloat(s.toString().replace(/\./g,'').replace(',','.'))||0;}
+function toMilesStr(n){if(!n) return '';return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function clearFocus(el){if(el.value==='0'||el.value==='0,00'||el.value==='') el.value='';}
+function fmtMiles(el){
+  let r=el.value.replace(/[^0-9,]/g,'');
+  const p=r.split(',');
+  if(p.length>2) r=p[0]+','+p.slice(1).join('');
+  const ip=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  el.value=p.length===2?ip+','+p[1]:ip;
+}
+function fmtBlur(el){const v=parseMiles(el.value);el.value=v>0?toMilesStr(v):'';}
+function fmt(n){return '$'+Math.round(n||0).toLocaleString('es-AR');}
+
+// LOGIN
+function handleLogin(){
+  const raw=document.getElementById('code-input').value.trim().toUpperCase();
+  if(!raw.startsWith('ALB-')||raw.length<6){toast('Código inválido. Formato: ALB-0000');return;}
+  store=getStore(raw);save();
+  document.getElementById('header-code').textContent=raw;
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('app-wrapper').style.display='flex';
+  loadConfig();loadDashboard();
+}
+
+// NAV
+function showScreen(name){
+  document.querySelectorAll('.content-area .screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name)?.classList.add('active');
+  // Sidebar
+  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('snav-'+name)?.classList.add('active');
+  // Mobile
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mnav-'+name)?.classList.add('active');
+  if(name==='items') loadItems();
+  if(name==='dashboard') loadDashboard();
+  if(name==='nuevo-item') renderChipsCustom();
+}
+
+// FISCAL
+function selFiscal(v){
+  fiscalActual=v;
+  ['mono','ri','no'].forEach(f=>document.getElementById('fiscal-'+f).classList.toggle('active',f===v));
+  document.getElementById('bloque-mono').classList.toggle('hidden',v!=='mono');
+  document.getElementById('bloque-ri').classList.toggle('hidden',v!=='ri');
+}
+
+// OTROS CALC (con opción % o fijo)
+function addOtroCalc(nombre='',tipo='fijo',monto=0){
+  cCalc++;const id='oc'+cCalc;
+  const opts=OTROS_CALC_OPTS.map((o,i)=>`<option value="${i===0?'':o}"${o===nombre?' selected':''}${i===0?' disabled':''}>${o}</option>`).join('');
+  const div=document.createElement('div');div.className='otro-item';div.id=id;
+  div.innerHTML=`
+    <div class="otro-row1">
+      <select class="otro-select" onchange="onOtroCalcChange(this,'${id}')">${opts}</select>
+      <button class="otro-remove" onclick="document.getElementById('${id}').remove()">×</button>
+    </div>
+    <div class="otro-row2" id="${id}-row2" style="display:none">
+      <div class="otro-tipo-toggle">
+        <button class="otro-tipo-btn ${tipo==='fijo'?'active':''}" onclick="selTipoOtro('${id}','fijo')">$ Fijo</button>
+        <button class="otro-tipo-btn ${tipo==='pct'?'active':''}" onclick="selTipoOtro('${id}','pct')">% del costo</button>
+      </div>
+      <input type="text" class="otro-monto" id="${id}-monto" placeholder="${tipo==='pct'?'Ej: 15':'0,00'}" value="${monto>0?(tipo==='pct'?monto:toMilesStr(monto)):''}" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMilesCondicional(this,'${id}')" onblur="fmtBlurCondicional(this,'${id}')">
+    </div>`;
+  div.querySelector('select').dataset.tipoOtro=tipo;
+  document.getElementById('otros-calc').appendChild(div);
+  if(nombre) document.getElementById(id+'-row2').style.display='grid';
+}
+
+function onOtroCalcChange(sel,id){
+  checkCustomOpt(sel);
+  const row2=document.getElementById(id+'-row2');
+  if(sel.value) row2.style.display='grid';
+  // Si es comisión, mostrar toggle %; sino solo fijo
+  const esPct=OPTS_CON_TIPO.includes(sel.value);
+  const toggle=row2.querySelector('.otro-tipo-toggle');
+  toggle.style.display=esPct?'flex':'none';
+  if(!esPct) selTipoOtro(id,'fijo');
+  const mInput=document.getElementById(id+'-monto');
+  mInput.placeholder=sel.dataset.tipoOtro==='pct'?'Ej: 15':'0,00';
+}
+
+function selTipoOtro(id,tipo){
+  const btns=document.querySelectorAll(`#${id} .otro-tipo-btn`);
+  btns.forEach(b=>b.classList.toggle('active',b.textContent.includes(tipo==='fijo'?'Fijo':'%')));
+  const sel=document.querySelector(`#${id} select`);
+  if(sel) sel.dataset.tipoOtro=tipo;
+  const mInput=document.getElementById(id+'-monto');
+  mInput.placeholder=tipo==='pct'?'Ej: 15':'0,00';
+  mInput.value='';
+}
+
+function fmtMilesCondicional(el,id){
+  const sel=document.querySelector(`#${id} select`);
+  if(sel?.dataset.tipoOtro==='pct'){
+    // Solo números y coma para porcentaje
+    el.value=el.value.replace(/[^0-9,]/g,'');
+  } else {
+    fmtMiles(el);
+  }
+}
+function fmtBlurCondicional(el,id){
+  const sel=document.querySelector(`#${id} select`);
+  if(sel?.dataset.tipoOtro!=='pct') fmtBlur(el);
+}
+
+function getOtrosCalcData(){
+  const lista=[];
+  document.querySelectorAll('#otros-calc .otro-item').forEach(item=>{
+    const sel=item.querySelector('.otro-select');
+    const nombre=sel?.value||'';
+    const tipo=sel?.dataset.tipoOtro||'fijo';
+    const montoRaw=parseMiles(item.querySelector('.otro-monto')?.value||'');
+    if(nombre&&montoRaw>0) lista.push({nombre,tipo,valor:montoRaw});
+  });
+  return lista;
+}
+
+// OTROS FIJOS
+function addOtroFijo(nombre='',monto=0){
+  cFijo++;const id='of'+cFijo;
+  const opts=OTROS_FIJOS_OPTS.map((o,i)=>`<option value="${i===0?'':o}"${o===nombre?' selected':''}${i===0?' disabled':''}>${o}</option>`).join('');
+  const div=document.createElement('div');div.className='otro-item';div.id=id;
+  div.innerHTML=`
+    <div class="otro-row1">
+      <select class="otro-select" onchange="checkCustomOpt(this)">${opts}</select>
+      <button class="otro-remove" onclick="document.getElementById('${id}').remove()">×</button>
+    </div>
+    <div class="otro-row2" style="grid-template-columns:1fr">
+      <input type="text" class="otro-monto" placeholder="0,00" value="${monto>0?toMilesStr(monto):''}" inputmode="numeric" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)">
+    </div>`;
+  document.getElementById('otros-fijos-cont').appendChild(div);
+}
+
+function getOtrosFijosData(){
+  const lista=[];
+  document.querySelectorAll('#otros-fijos-cont .otro-item').forEach(item=>{
+    const n=item.querySelector('.otro-select')?.value||'';
+    const m=parseMiles(item.querySelector('.otro-monto')?.value||'');
+    if(n&&m>0) lista.push({nombre:n,monto:m});
+  });
+  return lista;
+}
+
+function checkCustomOpt(sel){
+  if(sel.value==='Otro (personalizado)'){
+    const n=prompt('Nombre del gasto:');
+    if(n){const o=new Option(n,n,true,true);sel.add(o);sel.value=n;}
+    else sel.selectedIndex=0;
+  }
+}
+
+// MEDIOS CUSTOM
+function addMedioCustom(nombre='',deb=0,cred=0,com=0){
+  cMedio++;const id='mc'+cMedio;
+  const div=document.createElement('div');div.className='medio-custom-card';div.id=id;
+  div.innerHTML=`
+    <div class="mc-header">
+      <input type="text" class="mc-nombre-input" placeholder="Nombre (ej: Naranja X, Ualá, MODO...)" value="${nombre}">
+      <button class="mc-remove" onclick="document.getElementById('${id}').remove()">×</button>
+    </div>
+    <div class="mc-rates">
+      <div class="rate-field"><label>Débito %</label><input type="text" value="${deb||''}" placeholder="0" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+      <div class="rate-field"><label>Crédito %</label><input type="text" value="${cred||''}" placeholder="0" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+      <div class="rate-field"><label>Link/QR %</label><input type="text" value="${com||''}" placeholder="0" onfocus="clearFocus(this)" oninput="fmtMiles(this)" onblur="fmtBlur(this)"></div>
+    </div>`;
+  document.getElementById('medios-custom-cont').appendChild(div);
+}
+
+function getMediosCustomData(){
+  const lista=[];
+  document.querySelectorAll('.medio-custom-card').forEach(c=>{
+    const n=c.querySelector('.mc-nombre-input')?.value?.trim()||'';
+    const r=c.querySelectorAll('.rate-field input');
+    if(n) lista.push({nombre:n,deb:parseMiles(r[0]?.value||''),cred:parseMiles(r[1]?.value||''),com:parseMiles(r[2]?.value||'')});
+  });
+  return lista;
+}
+
+function renderChipsCustom(){
+  const cont=document.getElementById('chips-custom-pago');
+  cont.innerHTML='';
+  (store?.config?.mediosCustom||[]).forEach(m=>{
+    const tipos=[{k:'deb',l:'Débito'},{k:'cred',l:'Crédito'},{k:'com',l:'Link/QR'}];
+    tipos.forEach(t=>{
+      if(m[t.k]>0){
+        const chip=document.createElement('div');
+        chip.className='chip';chip.dataset.val='cx_'+m.nombre+'_'+t.k;
+        chip.textContent=m.nombre+' '+t.l;
+        chip.onclick=function(){selPago(this);};
+        cont.appendChild(chip);
+      }
+    });
+  });
+}
+
+// CHIPS
+function selChip(el,groupId){document.querySelectorAll('#'+groupId+' .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+function selPago(el){
+  document.querySelectorAll('#pago-chips .chip').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('#chips-custom-pago .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+function selMargen(el,val){document.querySelectorAll('#margen-group .toggle-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');margenActual=val;document.getElementById('margen-label').textContent=val+'%';}
+function togEnvio(val){
+  envioActivo=val;
+  document.getElementById('envio-no').classList.toggle('active',!val);
+  document.getElementById('envio-si').classList.toggle('active',val);
+  document.getElementById('envio-campo').classList.toggle('hidden',!val);
+}
+
+// CÁLCULO
+function calcular(){
+  const cfg=store.config;
+  let ok=true;
+  const nombre=document.getElementById('np-nombre').value.trim();
+  if(!nombre){document.getElementById('np-nombre').classList.add('error');document.getElementById('err-nombre').classList.add('show');ok=false;}
+  else{document.getElementById('np-nombre').classList.remove('error');document.getElementById('err-nombre').classList.remove('show');}
+  const costo=parseMiles(document.getElementById('np-costo').value);
+  if(!costo){document.getElementById('np-costo').classList.add('error');document.getElementById('err-costo').classList.add('show');ok=false;}
+  else{document.getElementById('np-costo').classList.remove('error');document.getElementById('err-costo').classList.remove('show');}
+  if(!cfg.unidades||cfg.unidades<=0){toast('Completá la cantidad de productos en Mi Negocio');setTimeout(()=>showScreen('negocio'),1200);return;}
+  if(!ok) return;
+
+  const proveedor=document.getElementById('np-proveedor').value.trim();
+  const flete=parseMiles(document.getElementById('np-flete').value);
+  const envio=envioActivo?parseMiles(document.getElementById('np-envio').value):0;
+  const canal=document.querySelector('#canal-chips .chip.active')?.dataset.val||'whatsapp';
+  const pagoEl=document.querySelector('#pago-chips .chip.active')||document.querySelector('#chips-custom-pago .chip.active');
+  const pagoVal=pagoEl?.dataset.val||'efectivo';
+
+  // Otros gastos del producto
+  const otrosData=getOtrosCalcData();
+  let otrosTotal=0,otrosDetalle=[];
+  otrosData.forEach(o=>{
+    let monto=0;
+    if(o.tipo==='pct') monto=(costo+flete)*(o.valor/100);
+    else monto=o.valor;
+    otrosTotal+=monto;
+    otrosDetalle.push({nombre:o.nombre+(o.tipo==='pct'?' ('+o.valor+'%)':''),monto});
+  });
+
+  // Gasto fijo por unidad
+  const otrosFijosTotal=(cfg.otrosFijos||[]).reduce((a,b)=>a+b.monto,0);
+  const gastosFijos=cfg.sueldo+cfg.alquiler+cfg.servicios+cfg.empleados+cfg.packaging+cfg.publicidad+cfg.plataformas+cfg.contador+(cfg.cuotaMono||0)+otrosFijosTotal;
+  const gastoPorUnidad=gastosFijos/cfg.unidades;
+
+  // Comisión medio de pago
+  let comPct=0,pagoLabel=pagoVal;
+  const mpMap={efectivo:0,transferencia:0,mp_debito:cfg.mp_deb/100,mp_credito:cfg.mp_cred1/100,mp_qr:cfg.mp_qr/100,mp_link:cfg.mp_link/100};
+  if(mpMap[pagoVal]!==undefined){comPct=mpMap[pagoVal];pagoLabel=pagoEl?.textContent||pagoVal;}
+  else if(pagoVal.startsWith('cx_')){
+    const parts=pagoVal.split('_');const mNom=parts[1];const mTipo=parts[2];
+    const mc=(cfg.mediosCustom||[]).find(m=>m.nombre===mNom);
+    if(mc) comPct=(mc[mTipo]||0)/100;
+    pagoLabel=mNom+' '+(mTipo==='deb'?'Débito':mTipo==='cred'?'Crédito':'Link/QR');
+  }
+  const comCanal=canal==='online'?0.01:0;
+  const ivaRate=fiscalActual==='ri'?0.21:0;
+
+  const costoBase=costo+flete+envio+gastoPorUnidad+otrosTotal;
+  let precioContado=costoBase*(1+margenActual/100);
+  const totalCom=comPct+comCanal;
+  if(totalCom<1) precioContado/=(1-totalCom);
+  const precioContadoFinal=precioContado*(1+ivaRate);
+  const precioLista=precioContadoFinal*1.10;
+  const c3=precioLista*(1+cfg.c3/100);
+  const c6=precioLista*(1+cfg.c6/100);
+  const c12=precioLista*(1+cfg.c12/100);
+
+  calculo={nombre,proveedor,canal,pagoLabel,costo,flete,envio,gastoPorUnidad,otrosTotal,otrosDetalle,costoBase,margen:margenActual,comPct,ivaRate,precioContado:precioContadoFinal,precioLista,c3,c6,c12};
+  renderResultado();showScreen('resultado');
+}
+
+function renderResultado(){
+  const c=calculo;
+  document.getElementById('res-lista').textContent=fmt(c.precioLista);
+  document.getElementById('res-lista2').textContent=fmt(c.precioLista);
+  document.getElementById('res-nombre').textContent=c.nombre+(c.proveedor?' · '+c.proveedor:'');
+  document.getElementById('res-contado').textContent=fmt(c.precioContado);
+  document.getElementById('cuotas-grid').innerHTML=[
+    {n:'3 cuotas',p:c.c3/3,t:c.c3},{n:'6 cuotas',p:c.c6/6,t:c.c6},{n:'12 cuotas',p:c.c12/12,t:c.c12}
+  ].map(q=>`<div class="cuota-card"><div class="c-num">${q.n}</div><div class="c-price">${fmt(q.p)}</div><div class="c-total">Total ${fmt(q.t)}</div></div>`).join('');
+
+  const rows=[
+    ['Costo de compra',c.costo],
+    c.flete>0?['Flete proveedor',c.flete]:null,
+    c.envio>0?['Envío al cliente',c.envio]:null,
+    ['Gastos fijos por unidad',c.gastoPorUnidad],
+    ...c.otrosDetalle.map(o=>[o.nombre,o.monto]),
+    c.comPct>0?['Comisión '+c.pagoLabel,c.costoBase*c.comPct]:null,
+    c.ivaRate>0?['IVA 21% (Resp. Inscripta)',c.precioContado*0.21/1.21]:null,
+    ['Ganancia ('+c.margen+'%)',c.costoBase*(c.margen/100)],
+  ].filter(Boolean);
+
+  document.getElementById('res-breakdown').innerHTML=
+    rows.map(r=>`<div class="breakdown-row"><span>${r[0]}</span><span>${fmt(r[1])}</span></div>`).join('')+
+    `<div class="breakdown-row total"><span><strong>Precio contado</strong></span><span><strong>${fmt(c.precioContado)}</strong></span></div>`;
+}
+
+function guardarItem(){
+  if(!calculo) return;
+  store.items.push({id:Date.now(),nombre:calculo.nombre,proveedor:calculo.proveedor,canal:calculo.canal,costo:calculo.costo,lista:calculo.precioLista,contado:calculo.precioContado,margen:calculo.margen,fecha:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})});
+  save();toast('✓ Producto guardado');setTimeout(()=>showScreen('dashboard'),800);
+}
+
+// ITEMS
+function loadItems(){filtrar();}
+function filtrar(){
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase();
+  const lista=[...(store?.items||[])].reverse().filter(i=>i.nombre.toLowerCase().includes(q)||(i.proveedor||'').toLowerCase().includes(q));
+  const cont=document.getElementById('items-list');
+  if(!lista.length){cont.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg><h3>Sin productos aún</h3><p>Calculá tu primer precio para verlo acá.</p></div>`;return;}
+  cont.innerHTML=lista.map(i=>itemCard(i)).join('');
+}
+function itemCard(i){
+  return `<div class="item-card" onclick="abrirEditar(${i.id})">
+    <div class="item-top">
+      <div class="item-left"><h4>${i.nombre}</h4><p>${i.canal} · ${i.fecha}</p></div>
+      <div class="item-right"><div class="price">${fmt(i.lista)}</div><div class="cost">costo ${fmt(i.costo)}</div></div>
+    </div>
+    ${i.proveedor?`<div class="item-proveedor"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${i.proveedor}</div>`:''}
+  </div>`;
+}
+
+function abrirEditar(id){
+  editItemId=id;
+  const item=store.items.find(i=>i.id===id);if(!item) return;
+  document.getElementById('modal-titulo').textContent=item.nombre;
+  document.getElementById('modal-sub').textContent=item.canal+' · '+item.fecha;
+  document.getElementById('edit-nombre').value=item.nombre;
+  document.getElementById('edit-proveedor').value=item.proveedor||'';
+  document.getElementById('edit-costo').value=toMilesStr(item.costo);
+  document.getElementById('edit-lista').value=toMilesStr(Math.round(item.lista));
+  document.getElementById('edit-contado').value=toMilesStr(Math.round(item.contado));
+  document.getElementById('modal-editar').classList.add('show');
+}
+function cerrarModal(){document.getElementById('modal-editar').classList.remove('show');editItemId=null;}
+function guardarEdicion(){
+  if(!editItemId) return;
+  const idx=store.items.findIndex(i=>i.id===editItemId);if(idx===-1) return;
+  store.items[idx].nombre=document.getElementById('edit-nombre').value.trim();
+  store.items[idx].proveedor=document.getElementById('edit-proveedor').value.trim();
+  store.items[idx].costo=parseMiles(document.getElementById('edit-costo').value);
+  store.items[idx].lista=parseMiles(document.getElementById('edit-lista').value);
+  store.items[idx].contado=parseMiles(document.getElementById('edit-contado').value);
+  save();cerrarModal();toast('✓ Cambios guardados');loadItems();
+}
+function eliminarItem(){
+  if(!editItemId) return;
+  if(!confirm('¿Eliminás este producto?')) return;
+  store.items=store.items.filter(i=>i.id!==editItemId);
+  save();cerrarModal();toast('Producto eliminado');loadItems();loadDashboard();
+}
+
+// DASHBOARD
+function loadDashboard(){
+  if(!store) return;
+  const marca=store.marca||'Tu marca';
+  document.getElementById('dash-name').textContent=marca;
+  document.getElementById('header-marca').textContent=marca;
+  document.getElementById('stat-items').textContent=store.items.length;
+  if(store.items.length>0){const avg=store.items.reduce((a,b)=>a+(b.margen||0),0)/store.items.length;document.getElementById('stat-margen').textContent=Math.round(avg)+'%';}
+  const cont=document.getElementById('dash-recientes');
+  if(!store.items.length){cont.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg><h3>Sin productos aún</h3><p>Calculá tu primer precio para verlo acá.</p></div>`;}
+  else cont.innerHTML=[...store.items].reverse().slice(0,4).map(i=>itemCard(i)).join('');
+}
+
+// CONFIG
+function loadConfig(){
+  if(!store) return;
+  const c=store.config;
+  document.getElementById('cfg-marca').value=store.marca||'';
+  document.getElementById('cfg-unidades').value=c.unidades||'';
+  const fields={sueldo:'cfg-sueldo',alquiler:'cfg-alquiler',servicios:'cfg-servicios',empleados:'cfg-empleados',packaging:'cfg-packaging',publicidad:'cfg-publicidad',plataformas:'cfg-plataformas',contador:'cfg-contador',cuotaMono:'cfg-cuota-mono',mp_deb:'cfg-mp-deb',mp_cred1:'cfg-mp-cred1',mp_qr:'cfg-mp-qr',mp_link:'cfg-mp-link',c3:'cfg-c3',c6:'cfg-c6',c12:'cfg-c12'};
+  Object.entries(fields).forEach(([k,id])=>{const el=document.getElementById(id);if(el&&c[k]) el.value=toMilesStr(c[k]);});
+  fiscalActual=c.fiscal||'mono';selFiscal(fiscalActual);
+  document.getElementById('otros-fijos-cont').innerHTML='';
+  (c.otrosFijos||[]).forEach(o=>addOtroFijo(o.nombre,o.monto));
+  document.getElementById('medios-custom-cont').innerHTML='';
+  (c.mediosCustom||[]).forEach(m=>addMedioCustom(m.nombre,m.deb,m.cred,m.com));
+}
+
+function guardarConfig(){
+  const unidades=parseInt(document.getElementById('cfg-unidades').value)||0;
+  if(unidades<=0){document.getElementById('cfg-unidades').classList.add('error');document.getElementById('err-unidades').classList.add('show');toast('La cantidad de productos es obligatoria');return;}
+  document.getElementById('cfg-unidades').classList.remove('error');document.getElementById('err-unidades').classList.remove('show');
+  store.marca=document.getElementById('cfg-marca').value.trim();
+  const c=store.config;c.unidades=unidades;
+  const fields={sueldo:'cfg-sueldo',alquiler:'cfg-alquiler',servicios:'cfg-servicios',empleados:'cfg-empleados',packaging:'cfg-packaging',publicidad:'cfg-publicidad',plataformas:'cfg-plataformas',contador:'cfg-contador',cuotaMono:'cfg-cuota-mono',mp_deb:'cfg-mp-deb',mp_cred1:'cfg-mp-cred1',mp_qr:'cfg-mp-qr',mp_link:'cfg-mp-link',c3:'cfg-c3',c6:'cfg-c6',c12:'cfg-c12'};
+  Object.entries(fields).forEach(([k,id])=>{const el=document.getElementById(id);if(el) c[k]=parseMiles(el.value)||0;});
+  c.fiscal=fiscalActual;c.otrosFijos=getOtrosFijosData();c.mediosCustom=getMediosCustomData();
+  save();loadDashboard();toast('✓ Configuración guardada');
+}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}</script>
+</body>
+</html>
