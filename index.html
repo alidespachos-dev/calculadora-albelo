@@ -1135,6 +1135,112 @@ function guardarConfig(){
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 </script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDob11LjZfV7jzzfcq5OtQGLzkrFMzjLwI",
+  authDomain: "calculadora-albelo.firebaseapp.com",
+  projectId: "calculadora-albelo",
+  storageBucket: "calculadora-albelo.firebasestorage.app",
+  messagingSenderId: "864566982219",
+  appId: "1:864566982219:web:ca28e10a04d0df0c9effce"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Exponer funciones de Firebase al scope global
+window.fbValidarCodigo = async function(code) {
+  try {
+    const ref = doc(db, 'codigos', code);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return { valido: false, msg: 'Código inválido. Verificá que lo escribiste correctamente.' };
+    const data = snap.data();
+    if (data.estado !== 'vendido') return { valido: false, msg: 'Este código aún no está activado. Contactá a Alicia Albelo.' };
+    return { valido: true, data };
+  } catch(e) {
+    console.error(e);
+    return { valido: false, msg: 'Error de conexión. Verificá tu internet e intentá de nuevo.' };
+  }
+};
+
+window.fbRegistrarDispositivo = async function(code, deviceId) {
+  try {
+    const ref = doc(db, 'codigos', code);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return false;
+    const data = snap.data();
+    const dispositivos = data.dispositivos || [];
+    // Si ya está registrado este dispositivo, OK
+    if (dispositivos.includes(deviceId)) return true;
+    // Máximo 2 dispositivos
+    if (dispositivos.length >= 2) return false;
+    // Registrar nuevo dispositivo
+    await updateDoc(ref, { dispositivos: [...dispositivos, deviceId] });
+    return true;
+  } catch(e) {
+    console.error(e);
+    return false;
+  }
+};
+
+// Generar ID único del dispositivo
+function getDeviceId() {
+  let id = localStorage.getItem('alb_device_id');
+  if (!id) {
+    id = 'dev_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
+    localStorage.setItem('alb_device_id', id);
+  }
+  return id;
+}
+window.getDeviceId = getDeviceId;
+
+// Override del handleLogin para validar con Firebase
+window.handleLoginFirebase = async function() {
+  const raw = document.getElementById('code-input').value.trim().toUpperCase();
+  if (!raw.startsWith('ALB-') || raw.length < 6) { toast('Código inválido. Formato: ALB-0000'); return; }
+
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = 'Verificando...';
+  btn.disabled = true;
+
+  const resultado = await window.fbValidarCodigo(raw);
+  if (!resultado.valido) {
+    toast(resultado.msg);
+    btn.textContent = 'Ingresar';
+    btn.disabled = false;
+    return;
+  }
+
+  const deviceId = getDeviceId();
+  const registrado = await window.fbRegistrarDispositivo(raw, deviceId);
+  if (!registrado) {
+    toast('Este código ya está activado en 2 dispositivos. Contactá a Alicia Albelo.');
+    btn.textContent = 'Ingresar';
+    btn.disabled = false;
+    return;
+  }
+
+  // Todo OK — iniciar sesión
+  store = getStore(raw);
+  save();
+  localStorage.setItem('alb_session', raw);
+  document.getElementById('header-code').textContent = raw;
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('app-wrapper').style.display = 'flex';
+  loadConfig(); loadDashboard();
+  btn.textContent = 'Ingresar';
+  btn.disabled = false;
+};
+
+// Reemplazar el botón de login
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.querySelector('.btn-primary');
+  if (btn) btn.onclick = window.handleLoginFirebase;
+});
+</script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));}</script>
 </body>
 </html>
