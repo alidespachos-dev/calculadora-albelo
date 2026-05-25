@@ -380,6 +380,13 @@ select.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
                 <button class="toggle-btn active" onclick="selMargen(this,100)">100%</button>
                 <button class="toggle-btn" onclick="selMargen(this,130)">130%</button>
                 <button class="toggle-btn" onclick="selMargen(this,150)">150%</button>
+                <button class="toggle-btn" id="margen-custom-btn" onclick="selMargenCustom(this)">Otro</button>
+              </div>
+              <div id="margen-custom-campo" class="hidden" style="margin-top:8px">
+                <div style="position:relative">
+                  <input type="text" class="form-input" id="margen-custom-input" placeholder="Ej: 120" inputmode="numeric" onfocus="clearFocus(this)" oninput="onMargenCustomInput(this)" style="padding-right:32px">
+                  <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gray-dark);font-size:14px">%</span>
+                </div>
               </div>
               <p class="form-hint">Seleccionado: <span id="margen-label">100%</span></p>
             </div>
@@ -677,15 +684,42 @@ function fmtMiles(el){
 function fmtBlur(el){const v=parseMiles(el.value);el.value=v>0?toMilesStr(v):'';}
 function fmt(n){return '$'+Math.round(n||0).toLocaleString('es-AR');}
 
-// LOGIN
+// LOGIN — recuerda la sesión
+function checkSavedSession(){
+  const savedCode=localStorage.getItem('alb_session');
+  if(savedCode){
+    store=getStore(savedCode);
+    document.getElementById('header-code').textContent=savedCode;
+    document.getElementById('screen-login').classList.remove('active');
+    document.getElementById('app-wrapper').style.display='flex';
+    loadConfig();loadDashboard();
+    return true;
+  }
+  return false;
+}
+
 function handleLogin(){
   const raw=document.getElementById('code-input').value.trim().toUpperCase();
   if(!raw.startsWith('ALB-')||raw.length<6){toast('Código inválido. Formato: ALB-0000');return;}
   store=getStore(raw);save();
+  localStorage.setItem('alb_session',raw);
   document.getElementById('header-code').textContent=raw;
   document.getElementById('screen-login').classList.remove('active');
   document.getElementById('app-wrapper').style.display='flex';
   loadConfig();loadDashboard();
+}
+
+// MARGEN PERSONALIZADO
+function selMargenCustom(el){
+  document.querySelectorAll('#margen-group .toggle-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('margen-custom-campo').classList.remove('hidden');
+  document.getElementById('margen-custom-input').focus();
+}
+function onMargenCustomInput(el){
+  el.value=el.value.replace(/[^0-9]/g,'');
+  const v=parseInt(el.value)||0;
+  if(v>0){margenActual=v;document.getElementById('margen-label').textContent=v+'%';}
 }
 
 // NAV
@@ -867,7 +901,13 @@ function selPago(el){
   document.querySelectorAll('#chips-custom-pago .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
 }
-function selMargen(el,val){document.querySelectorAll('#margen-group .toggle-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');margenActual=val;document.getElementById('margen-label').textContent=val+'%';}
+function selMargen(el,val){
+  document.querySelectorAll('#margen-group .toggle-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');margenActual=val;
+  document.getElementById('margen-label').textContent=val+'%';
+  document.getElementById('margen-custom-campo').classList.add('hidden');
+  document.getElementById('margen-custom-input').value='';
+}
 function togEnvio(val){
   envioActivo=val;
   document.getElementById('envio-no').classList.toggle('active',!val);
@@ -966,9 +1006,25 @@ function renderResultado(){
 
 function guardarItem(){
   if(!calculo) return;
-  store.items.push({id:Date.now(),nombre:calculo.nombre,proveedor:calculo.proveedor,canal:calculo.canal,costo:calculo.costo,lista:calculo.precioLista,contado:calculo.precioContado,margen:calculo.margen,fecha:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})});
-  save();toast('✓ Producto guardado');setTimeout(()=>showScreen('dashboard'),800);
+  const nuevo={id:editItemId||Date.now(),nombre:calculo.nombre,proveedor:calculo.proveedor,canal:calculo.canal,costo:calculo.costo,lista:calculo.precioLista,contado:calculo.precioContado,margen:calculo.margen,fecha:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})};
+  if(editItemId){
+    const idx=store.items.findIndex(i=>i.id===editItemId);
+    if(idx!==-1) store.items[idx]=nuevo;
+    editItemId=null;
+    toast('✓ Producto actualizado');
+  } else {
+    store.items.push(nuevo);
+    toast('✓ Producto guardado');
+  }
+  save();setTimeout(()=>showScreen('dashboard'),800);
 }
+
+// Al cargar la página verificar sesión guardada
+window.addEventListener('DOMContentLoaded',()=>{
+  if(!checkSavedSession()){
+    document.getElementById('screen-login').classList.add('active');
+  }
+});
 
 // ITEMS
 function loadItems(){filtrar();}
@@ -990,16 +1046,34 @@ function itemCard(i){
 }
 
 function abrirEditar(id){
-  editItemId=id;
   const item=store.items.find(i=>i.id===id);if(!item) return;
-  document.getElementById('modal-titulo').textContent=item.nombre;
-  document.getElementById('modal-sub').textContent=item.canal+' · '+item.fecha;
-  document.getElementById('edit-nombre').value=item.nombre;
-  document.getElementById('edit-proveedor').value=item.proveedor||'';
-  document.getElementById('edit-costo').value=toMilesStr(item.costo);
-  document.getElementById('edit-lista').value=toMilesStr(Math.round(item.lista));
-  document.getElementById('edit-contado').value=toMilesStr(Math.round(item.contado));
-  document.getElementById('modal-editar').classList.add('show');
+  editItemId=id;
+  // Precargar pantalla de cálculo
+  document.getElementById('np-nombre').value=item.nombre||'';
+  document.getElementById('np-proveedor').value=item.proveedor||'';
+  document.getElementById('np-costo').value=toMilesStr(item.costo||0);
+  document.getElementById('np-flete').value='';
+  document.getElementById('np-envio').value='';
+  // Canal
+  document.querySelectorAll('#canal-chips .chip').forEach(c=>c.classList.remove('active'));
+  const canalEl=document.querySelector(`#canal-chips .chip[data-val="${item.canal}"]`);
+  if(canalEl) canalEl.classList.add('active');
+  else document.querySelector('#canal-chips .chip').classList.add('active');
+  // Margen
+  margenActual=item.margen||100;
+  document.querySelectorAll('#margen-group .toggle-btn').forEach(b=>b.classList.remove('active'));
+  const margenMap={80:0,100:1,130:2,150:3};
+  if(margenMap[item.margen]!==undefined){
+    document.querySelectorAll('#margen-group .toggle-btn')[margenMap[item.margen]].classList.add('active');
+    document.getElementById('margen-custom-campo').classList.add('hidden');
+  } else {
+    document.getElementById('margen-custom-btn').classList.add('active');
+    document.getElementById('margen-custom-campo').classList.remove('hidden');
+    document.getElementById('margen-custom-input').value=item.margen||'';
+  }
+  document.getElementById('margen-label').textContent=(item.margen||100)+'%';
+  showScreen('nuevo-item');
+  toast('Editando: '+item.nombre);
 }
 function cerrarModal(){document.getElementById('modal-editar').classList.remove('show');editItemId=null;}
 function guardarEdicion(){
