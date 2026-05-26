@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin — Cargar Códigos Firebase</title>
+<style>
+body{font-family:Arial,sans-serif;background:#0A0A0A;color:#fff;padding:40px;max-width:600px;margin:0 auto;}
+h1{color:#C9A96E;margin-bottom:8px;font-size:22px;}
+p{color:#888;font-size:13px;margin-bottom:24px;}
+textarea{width:100%;height:200px;background:#1a1a1a;border:1px solid #333;color:#fff;padding:16px;font-family:monospace;font-size:13px;border-radius:4px;resize:vertical;}
+button{background:#C9A96E;color:#0A0A0A;border:none;padding:14px 28px;font-weight:bold;font-size:14px;cursor:pointer;margin-top:12px;border-radius:4px;width:100%;}
+button:hover{background:#e8d5b0;}
+#log{margin-top:24px;background:#1a1a1a;border:1px solid #333;padding:16px;font-family:monospace;font-size:12px;min-height:100px;border-radius:4px;white-space:pre-wrap;color:#aaa;}
+.ok{color:#27AE60;}.err{color:#C0392B;}.info{color:#C9A96E;}
+</style>
+</head>
+<body>
+<h1>⚙ Admin — Cargar Códigos</h1>
+<p>Ingresá los códigos a cargar, uno por línea. Estado: vendido = puede ingresar / disponible = bloqueado.</p>
+<textarea id="codigos" placeholder="ALB-0001&#10;ALB-0002&#10;ALB-0003"></textarea>
+<select id="estado" style="width:100%;padding:12px;background:#1a1a1a;border:1px solid #333;color:#fff;margin-top:8px;border-radius:4px;font-size:14px">
+  <option value="vendido">vendido — puede ingresar a la app</option>
+  <option value="disponible">disponible — bloqueado (aún no vendido)</option>
+</select>
+<button onclick="cargar()">Cargar códigos en Firebase</button>
+<div id="log">Esperando...</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDob11LjZfV7jzzfcq5OtQGLzkrFMzjLwI",
+  authDomain: "calculadora-albelo.firebaseapp.com",
+  projectId: "calculadora-albelo",
+  storageBucket: "calculadora-albelo.firebasestorage.app",
+  messagingSenderId: "864566982219",
+  appId: "1:864566982219:web:ca28e10a04d0df0c9effce"
+});
+const db = getFirestore(app);
+const log = document.getElementById('log');
+
+function addLog(msg, tipo=''){log.innerHTML += `<span class="${tipo}">${msg}</span>\n`;}
+
+window.cargar = async function(){
+  const raw = document.getElementById('codigos').value.trim();
+  const estado = document.getElementById('estado').value;
+  if(!raw){addLog('⚠ Ingresá al menos un código','err');return;}
+  const codigos = raw.split('\n').map(c=>c.trim().toUpperCase()).filter(c=>c.startsWith('ALB-'));
+  if(!codigos.length){addLog('⚠ No se encontraron códigos válidos (deben empezar con ALB-)','err');return;}
+  log.innerHTML='';
+  addLog(`Cargando ${codigos.length} código(s) con estado: ${estado}...`,'info');
+  for(const code of codigos){
+    try{
+      await setDoc(doc(db,'codigos',code),{
+        codigo: code,
+        estado: estado,
+        dispositivos: [],
+        fechaCarga: new Date().toISOString()
+      },{merge:true});
+      addLog(`✓ ${code} — ${estado}`,'ok');
+    } catch(e){
+      addLog(`✗ ${code} — Error: ${e.message}`,'err');
+    }
+  }
+  addLog('\nListo.','info');
+};
+</script>
+</body>
+</html>
