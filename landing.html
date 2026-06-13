@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Calculadora de Precios para emprendedoras — Calculá el precio correcto de tus productos y fijate un sueldo real. App para celular y computadora.">
+<meta property="og:title" content="Calculadora de Precios — Ali Albelo">
+<meta property="og:description" content="Calculá el precio correcto de tus productos y fijate un sueldo real en tu emprendimiento. Todo desde tu celular, en segundos.">
+<meta property="og:type" content="website">
+<title>Calculadora de Precios — Ali Albelo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0A0A0A;--white:#FFFFFF;--gold:#C9A96E;--gold-light:#E8D5B0;
+  --gray:#F5F5F5;--gray-mid:#E0E0E0;--gray-dark:#888888;--red:#C0392B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--black);overflow-x:hidden;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);padding:16px 40px;display:flex;justify-content:space-between;align-items:center;}
+.nav-brand{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--white);letter-spacing:2px;text-transform:uppercase;}
+.nav-brand span{color:var(--gold);}
+.nav-cta{background:var(--gold);color:var(--black);border:none;padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+.nav-cta:hover{background:var(--gold-light);}
+@media(max-width:600px){nav{padding:14px 20px;}.nav-brand{font-size:16px;}.nav-cta{padding:8px 16px;font-size:11px;}}
+
+/* HERO */
+.hero{min-height:100vh;background:var(--black);display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 20px 80px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;border-radius:50%;border:1px solid rgba(201,169,110,0.08);}
+.hero::after{content:'';position:absolute;bottom:-150px;left:-150px;width:400px;height:400px;border-radius:50%;border:1px solid rgba(201,169,110,0.06);}
+.hero-inner{max-width:780px;position:relative;z-index:1;}
+.hero-badge{display:inline-block;border:1px solid rgba(201,169,110,0.4);padding:6px 18px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:32px;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,6vw,72px);font-weight:300;color:var(--white);line-height:1.1;margin-bottom:16px;}
+.hero h1 em{color:var(--gold);font-style:normal;}
+.hero-sub{font-size:clamp(14px,2vw,18px);color:var(--gray-dark);line-height:1.8;max-width:560px;margin:0 auto 48px;}
+.hero-ctas{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.btn-gold{background:var(--gold);color:var(--black);border:none;padding:18px 40px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:3px;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:all 0.2s;display:inline-block;}
+.btn-gold:hover{background:var(--gold-light);}
+.btn-outline-w{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,0.2);padding:18px 40px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:all 0.2s;display:inline-block;}
+.btn-outline-w:hover{border-color:var(--gold);color:var(--gold);}
+.hero-proof{margin-top:64px;display:flex;gap:40px;justify-content:center;flex-wrap:wrap;}
+.proof-item{text-align:center;}
+.proof-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:400;color:var(--gold);}
+.proof-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray-dark);margin-top:4px;}
+
+/* PROBLEMA */
+.section{padding:100px 20px;}
+.section-inner{max-width:1100px;margin:0 auto;}
+.section-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,4vw,48px);font-weight:300;line-height:1.2;margin-bottom:24px;}
+.section-sub{font-size:16px;color:var(--gray-dark);line-height:1.8;max-width:600px;}
+
+.problema-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:60px;}
+@media(max-width:768px){.problema-grid{grid-template-columns:1fr;}}
+.problema-card{border-left:2px solid var(--gold);padding:24px 28px;background:var(--gray);}
+.problema-card p{font-size:15px;line-height:1.8;color:var(--black);}
+.problema-card p strong{font-weight:500;}
+
+/* QUÉ ES */
+.que-es{background:var(--black);padding:100px 20px;}
+.que-es-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+@media(max-width:768px){.que-es-inner{grid-template-columns:1fr;gap:48px;}}
+.que-es-text .section-title{color:var(--white);}
+.que-es-text .section-sub{color:var(--gray-dark);}
+.feature-list{margin-top:40px;display:flex;flex-direction:column;gap:20px;}
+.feature-item{display:flex;gap:16px;align-items:flex-start;}
+.feature-icon{width:36px;height:36px;background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+.feature-text h4{font-size:14px;font-weight:500;color:var(--white);margin-bottom:4px;}
+.feature-text p{font-size:13px;color:var(--gray-dark);line-height:1.6;}
+
+/* MOCKUP */
+.mockup-wrap{position:relative;display:flex;justify-content:center;}
+.mockup-phone{width:280px;background:var(--black);border:2px solid rgba(201,169,110,0.3);border-radius:32px;padding:20px;box-shadow:0 40px 80px rgba(0,0,0,0.6);}
+.mockup-screen{background:#111;border-radius:20px;overflow:hidden;}
+.mockup-header{background:var(--black);padding:16px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);}
+.mockup-header h3{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--white);letter-spacing:1px;}
+.mockup-header span{font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;}
+.mockup-body{padding:16px;}
+.mockup-result{background:var(--black);padding:20px;text-align:center;margin-bottom:12px;border:1px solid rgba(201,169,110,0.2);}
+.mockup-result-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.mockup-result-price{font-family:'Cormorant Garamond',serif;font-size:36px;color:var(--white);}
+.mockup-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.mockup-card{background:#1a1a1a;padding:12px;border:1px solid rgba(255,255,255,0.06);}
+.mockup-card-label{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--gray-dark);margin-bottom:4px;}
+.mockup-card-price{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.mockup-cuotas{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.mockup-cuota{background:#1a1a1a;padding:8px;text-align:center;border:1px solid rgba(255,255,255,0.06);}
+.mockup-cuota-n{font-size:8px;color:var(--gray-dark);margin-bottom:2px;}
+.mockup-cuota-p{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--white);}
+
+/* CÓMO FUNCIONA */
+.como{padding:100px 20px;background:var(--gray);}
+.como-inner{max-width:1100px;margin:0 auto;}
+.como-steps{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px;margin-top:60px;}
+@media(max-width:900px){.como-steps{grid-template-columns:1fr 1fr;}}
+@media(max-width:500px){.como-steps{grid-template-columns:1fr;}}
+.como-step{position:relative;}
+.step-num{font-family:'Cormorant Garamond',serif;font-size:64px;font-weight:300;color:var(--gold-light);line-height:1;margin-bottom:16px;}
+.step-title{font-size:15px;font-weight:500;margin-bottom:8px;}
+.step-desc{font-size:13px;color:var(--gray-dark);line-height:1.7;}
+
+/* PARA QUIÉN */
+.para-quien{padding:100px 20px;}
+.para-quien-inner{max-width:1100px;margin:0 auto;}
+.tags-grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:40px;}
+.tag{border:1px solid var(--gray-mid);padding:12px 20px;font-size:13px;color:var(--black);}
+.tag.gold{border-color:var(--gold);background:rgba(201,169,110,0.06);color:var(--gold);}
+
+/* INCLUYE */
+.incluye{background:var(--black);padding:100px 20px;}
+.incluye-inner{max-width:800px;margin:0 auto;text-align:center;}
+.incluye-inner .section-title{color:var(--white);}
+.incluye-box{background:rgba(255,255,255,0.04);border:1px solid rgba(201,169,110,0.3);padding:48px;margin-top:48px;text-align:left;}
+.incluye-precio{font-family:'Cormorant Garamond',serif;font-size:64px;font-weight:300;color:var(--gold);text-align:center;margin-bottom:8px;}
+.incluye-precio-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gray-dark);text-align:center;margin-bottom:40px;}
+.incluye-items{display:flex;flex-direction:column;gap:16px;margin-bottom:40px;}
+.incluye-item{display:flex;gap:16px;align-items:flex-start;}
+.check{color:var(--gold);font-size:16px;flex-shrink:0;margin-top:2px;}
+.incluye-item-text h4{font-size:14px;font-weight:500;color:var(--white);margin-bottom:2px;}
+.incluye-item-text p{font-size:12px;color:var(--gray-dark);}
+.incluye-cta{text-align:center;}
+
+/* TESTIMONIOS */
+.testimonios{padding:100px 20px;background:var(--gray);}
+.testimonios-inner{max-width:1100px;margin:0 auto;}
+.test-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:60px;}
+@media(max-width:768px){.test-grid{grid-template-columns:1fr;}}
+.test-card{background:var(--white);padding:32px;border-left:3px solid var(--gold);}
+.test-text{font-size:14px;line-height:1.8;color:var(--black);margin-bottom:20px;font-style:italic;}
+.test-author{font-size:12px;font-weight:500;color:var(--gold);letter-spacing:1px;text-transform:uppercase;}
+.test-business{font-size:11px;color:var(--gray-dark);}
+
+/* FAQ */
+.faq{padding:100px 20px;}
+.faq-inner{max-width:760px;margin:0 auto;}
+.faq-item{border-bottom:1px solid var(--gray-mid);padding:24px 0;cursor:pointer;}
+.faq-q{font-size:16px;font-weight:500;display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.faq-q span{color:var(--gold);font-size:20px;flex-shrink:0;transition:transform 0.3s;}
+.faq-q span.open{transform:rotate(45deg);}
+.faq-a{font-size:14px;color:var(--gray-dark);line-height:1.8;margin-top:16px;display:none;}
+.faq-a.show{display:block;}
+
+/* CTA FINAL */
+.cta-final{background:var(--black);padding:120px 20px;text-align:center;position:relative;overflow:hidden;}
+.cta-final::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;border-radius:50%;border:1px solid rgba(201,169,110,0.08);}
+.cta-final-inner{position:relative;z-index:1;max-width:700px;margin:0 auto;}
+.cta-final h2{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,60px);font-weight:300;color:var(--white);line-height:1.2;margin-bottom:16px;}
+.cta-final h2 em{color:var(--gold);font-style:normal;}
+.cta-final p{font-size:16px;color:var(--gray-dark);margin-bottom:48px;line-height:1.8;}
+
+/* FOOTER */
+footer{background:var(--black);border-top:1px solid rgba(255,255,255,0.06);padding:40px 20px;text-align:center;}
+.footer-brand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--white);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.footer-brand span{color:var(--gold);}
+.footer-sub{font-size:11px;color:var(--gray-dark);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;}
+.footer-links{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
+.footer-links a{font-size:12px;color:var(--gray-dark);text-decoration:none;letter-spacing:1px;transition:color 0.2s;}
+.footer-links a:hover{color:var(--gold);}
+.footer-legal{font-size:10px;color:rgba(255,255,255,0.2);line-height:1.8;}
+
+/* DIVIDER */
+.gold-line{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto;max-width:200px;}
+
+/* STICKY CTA MOBILE */
+.sticky-cta{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--gold);padding:16px 20px;text-align:center;z-index:200;}
+.sticky-cta a{color:var(--black);font-size:13px;font-weight:500;letter-spacing:2px;text-transform:uppercase;text-decoration:none;}
+@media(max-width:768px){.sticky-cta{display:block;}}
+
+/* ANIMATIONS */
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Ali <span>Albelo</span></div>
+  <a href="https://wa.me/5491126883318?text=Hola%20Ali%2C%20quiero%20comprar%20la%20Calculadora%20de%20Precios%20%F0%9F%96%A4" target="_blank" class="nav-cta">Comprar — $30.000</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner fade-up">
+    <div class="hero-badge">App para celular y computadora</div>
+    <h1>¿Sabés cuánto<br>tenés que cobrar por<br><em>lo que vendés?</em></h1>
+    <p class="hero-sub">La Calculadora de Precios te dice exactamente cuánto cobrar por cada producto, cuánto ganás por prenda y cuánto necesitás vender para pagarte un sueldo real.</p>
+    <div class="hero-ctas">
+      <a href="https://wa.me/5491126883318?text=Hola%20Ali%2C%20quiero%20comprar%20la%20Calculadora%20de%20Precios%20%F0%9F%96%A4" target="_blank" class="btn-gold">Quiero mi calculadora →</a>
+      <a href="#como-funciona" class="btn-outline-w">Ver cómo funciona</a>
+    </div>
+    <div class="hero-proof">
+      <div class="proof-item">
+        <div class="proof-num">+500</div>
+        <div class="proof-label">Emprendedoras</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-num">$30K</div>
+        <div class="proof-label">Acceso de por vida</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-num">2 min</div>
+        <div class="proof-label">Para instalarla</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section class="section">
+  <div class="section-inner fade-up">
+    <div class="section-label">El problema</div>
+    <h2 class="section-title">Muchas emprendedoras venden<br>sin saber si están ganando</h2>
+    <p class="section-sub">Ponen el precio a ojo, copian a la competencia o simplemente agregan un poco más al costo... y al final del mes no les cierra.</p>
+    <div class="problema-grid">
+      <div class="problema-card">
+        <p><strong>No incluyen los gastos fijos</strong> en el precio. El alquiler, los servicios, el contador, el packaging — alguien los tiene que pagar. Si no están en el precio, los pagás vos con tu ganancia.</p>
+      </div>
+      <div class="problema-card">
+        <p><strong>No se pagan un sueldo real.</strong> Viven de lo que sobra. Si el negocio no te paga, estás subsidiándolo con tu tiempo. Eso no es rentabilidad, es trabajo gratis.</p>
+      </div>
+      <div class="problema-card">
+        <p><strong>No consideran las comisiones</strong> de Mercado Pago, las cuotas, el flete. Cada venta tiene costos ocultos que se comen el margen sin que te des cuenta.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUÉ ES -->
+<section class="que-es">
+  <div class="que-es-inner">
+    <div class="que-es-text fade-up">
+      <div class="section-label" style="color:var(--gold)">La solución</div>
+      <h2 class="section-title">Una app que calcula<br>todo por vos, en segundos</h2>
+      <p class="section-sub">Ingresás el costo de tu producto, tus gastos fijos y el sueldo que querés ganarte. La Calculadora hace el resto.</p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">💰</div>
+          <div class="feature-text">
+            <h4>Precio de venta correcto</h4>
+            <p>Precio contado, precio de lista y precio en cuotas — calculados automáticamente con todos tus costos incluidos.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">👩‍💼</div>
+          <div class="feature-text">
+            <h4>Sueldo real como emprendedora</h4>
+            <p>Ingresás cuánto querés ganarte por mes y la calculadora lo distribuye en el precio de cada producto.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📊</div>
+          <div class="feature-text">
+            <h4>Todos los costos contemplados</h4>
+            <p>Gastos fijos, comisiones de MP, flete, empleados, impuestos, cuotas. Nada queda afuera.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📱</div>
+          <div class="feature-text">
+            <h4>Desde tu celular, siempre</h4>
+            <p>Se instala como app en tu pantalla de inicio. Sin Excel, sin fórmulas complicadas, sin computadora obligatoria.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup-wrap fade-up">
+      <div class="mockup-phone">
+        <div class="mockup-screen">
+          <div class="mockup-header">
+            <h3>Ali Albelo</h3>
+            <span>Calculadora de precios</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-result">
+              <div class="mockup-result-label">Precio de lista</div>
+              <div class="mockup-result-price">$24.750</div>
+            </div>
+            <div class="mockup-cards">
+              <div class="mockup-card">
+                <div class="mockup-card-label">Precio contado</div>
+                <div class="mockup-card-price">$22.500</div>
+              </div>
+              <div class="mockup-card">
+                <div class="mockup-card-label">Tu ganancia</div>
+                <div class="mockup-card-price">$8.200</div>
+              </div>
+            </div>
+            <div class="mockup-cuotas">
+              <div class="mockup-cuota">
+                <div class="mockup-cuota-n">3 cuotas</div>
+                <div class="mockup-cuota-p">$9.487</div>
+              </div>
+              <div class="mockup-cuota">
+                <div class="mockup-cuota-n">6 cuotas</div>
+                <div class="mockup-cuota-p">$5.362</div>
+              </div>
+              <div class="mockup-cuota">
+                <div class="mockup-cuota-n">12 cuotas</div>
+                <div class="mockup-cuota-p">$3.187</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section class="como" id="como-funciona">
+  <div class="como-inner fade-up">
+    <div class="section-label">El proceso</div>
+    <h2 class="section-title">Cómo funciona</h2>
+    <div class="como-steps">
+      <div class="como-step">
+        <div class="step-num">01</div>
+        <h3 class="step-title">Configurás tu negocio</h3>
+        <p class="step-desc">Una sola vez. Ingresás tu sueldo pretendido, tus gastos fijos mensuales y tu situación fiscal. La app los recuerda siempre.</p>
+      </div>
+      <div class="como-step">
+        <div class="step-num">02</div>
+        <h3 class="step-title">Cargás el producto</h3>
+        <p class="step-desc">Nombre, costo de compra, flete, canal de venta y medio de cobro. En 30 segundos.</p>
+      </div>
+      <div class="como-step">
+        <div class="step-num">03</div>
+        <h3 class="step-title">La app calcula todo</h3>
+        <p class="step-desc">Precio contado, precio de lista, precio en cuotas x3, x6 y x12. Con todos tus costos y tu ganancia incluidos.</p>
+      </div>
+      <div class="como-step">
+        <div class="step-num">04</div>
+        <h3 class="step-title">Guardás y usás</h3>
+        <p class="step-desc">Guardás el producto en tu historial. Podés consultarlo, editarlo o recalcularlo cuando el costo cambie.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUIÉN -->
+<section class="para-quien section">
+  <div class="para-quien-inner fade-up">
+    <div class="section-label">Para quién es</div>
+    <h2 class="section-title">Pensada para emprendedoras<br>que venden productos físicos</h2>
+    <div class="tags-grid">
+      <div class="tag gold">Indumentaria y moda</div>
+      <div class="tag">Accesorios y bijouterie</div>
+      <div class="tag">Calzado</div>
+      <div class="tag">Lencería</div>
+      <div class="tag">Ropa infantil</div>
+      <div class="tag">Cosmética y skincare</div>
+      <div class="tag">Revendedoras</div>
+      <div class="tag">Mayoristas</div>
+      <div class="tag">Comisionistas</div>
+      <div class="tag">Tiendas online</div>
+      <div class="tag">Showrooms</div>
+      <div class="tag">Ferias y mercados</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUÉ INCLUYE -->
+<section class="incluye" id="precio">
+  <div class="incluye-inner fade-up">
+    <div class="section-label" style="color:var(--gold)">Lo que obtenés</div>
+    <h2 class="section-title" style="color:var(--white)">Todo lo que necesitás<br>para empezar hoy</h2>
+    <div class="incluye-box">
+      <div class="incluye-precio">$30.000</div>
+      <div class="incluye-precio-label">Pago único · Acceso de por vida</div>
+      <div class="incluye-items">
+        <div class="incluye-item">
+          <span class="check">✦</span>
+          <div class="incluye-item-text">
+            <h4>App Calculadora de Precios</h4>
+            <p>Instalable en tu celular y computadora. Funciona como app nativa en tu pantalla de inicio.</p>
+          </div>
+        </div>
+        <div class="incluye-item">
+          <span class="check">✦</span>
+          <div class="incluye-item-text">
+            <h4>Código de acceso único</h4>
+            <p>Personal e intransferible. Activado en hasta 2 dispositivos: tu celular y tu computadora.</p>
+          </div>
+        </div>
+        <div class="incluye-item">
+          <span class="check">✦</span>
+          <div class="incluye-item-text">
+            <h4>Manual de instrucciones</h4>
+            <p>PDF completo con todos los pasos para instalar, configurar y usar la calculadora.</p>
+          </div>
+        </div>
+        <div class="incluye-item">
+          <span class="check">✦</span>
+          <div class="incluye-item-text">
+            <h4>Grupo exclusivo "Contadora en Línea"</h4>
+            <p>Acceso al grupo de WhatsApp donde podés hacerme consultas diarias sobre precios, costos e impuestos.</p>
+          </div>
+        </div>
+        <div class="incluye-item">
+          <span class="check">✦</span>
+          <div class="incluye-item-text">
+            <h4>Actualizaciones incluidas</h4>
+            <p>Cada mejora de la app llega automáticamente a tu dispositivo. Sin pagar nada extra.</p>
+          </div>
+        </div>
+      </div>
+      <div class="incluye-cta">
+        <a href="https://wa.me/5491126883318?text=Hola%20Ali%2C%20quiero%20comprar%20la%20Calculadora%20de%20Precios%20%F0%9F%96%A4" target="_blank" class="btn-gold">Quiero mi calculadora →</a>
+        <p style="font-size:12px;color:var(--gray-dark);margin-top:16px;">🇦🇷 Argentina: transferencia o Personal Pay · Alias: <strong style="color:var(--gold)">calculadoradeprecios</strong><br>🌎 Resto del mundo: escribime y te mando el link de pago internacional</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="testimonios">
+  <div class="testimonios-inner fade-up">
+    <div class="section-label">Lo que dicen</div>
+    <h2 class="section-title">Emprendedoras que ya<br>calculan bien sus precios</h2>
+    <div class="test-grid">
+      <div class="test-card">
+        <p class="test-text">"No podía creer que estaba vendiendo mis buzos por debajo del costo. Con la calculadora me di cuenta enseguida y subí mis precios. El primer mes vendí igual y gané el doble."</p>
+        <div class="test-author">Sofía M.</div>
+        <div class="test-business">Indumentaria · Buenos Aires</div>
+      </div>
+      <div class="test-card">
+        <p class="test-text">"Lo que más me gustó es que incluye el sueldo. Nunca me había pagado un sueldo fijo y ahora lo tengo calculado en cada prenda. Por fin me pago a mí misma."</p>
+        <div class="test-author">Valentina R.</div>
+        <div class="test-business">Showroom · Córdoba</div>
+      </div>
+      <div class="test-card">
+        <p class="test-text">"La instalé en 2 minutos y en el mismo día ya calculé todos mis productos. Clarísima, simple y me ahorró horas de Excel. La recomiendo a todas mis amigas emprendedoras."</p>
+        <div class="test-author">Luciana P.</div>
+        <div class="test-business">Tienda online · Rosario</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--gray-dark);margin-top:32px;text-align:center;">* Reemplazá estos testimonios con los reales de tus clientas</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq section">
+  <div class="faq-inner fade-up">
+    <div class="section-label">Preguntas frecuentes</div>
+    <h2 class="section-title" style="margin-bottom:48px">Todo lo que necesitás saber</h2>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Necesito descargarla de una tienda? <span>+</span></div>
+      <div class="faq-a">No. Es una app web que se instala directamente desde el navegador, sin pasar por App Store ni Google Play. En Android abrís el link en Chrome y tocás "Agregar a pantalla de inicio". En iPhone lo hacés desde Safari.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿En cuántos dispositivos puedo usarla? <span>+</span></div>
+      <div class="faq-a">En dos: un celular y una computadora. La licencia es personal — no se puede compartir con otra persona.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Qué pasa si cambio de celular? <span>+</span></div>
+      <div class="faq-a">Me escribís por WhatsApp y reseteo tu código para que puedas activarlo en el nuevo dispositivo. Sin costo adicional.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Funciona para cualquier tipo de producto? <span>+</span></div>
+      <div class="faq-a">Sí. Está pensada principalmente para emprendedoras de indumentaria, accesorios y productos físicos. Podés calcular el precio de cualquier producto que compres y revendas.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Puedo pagar en cuotas? <span>+</span></div>
+      <div class="faq-a">Por el momento el pago es en un solo pago por transferencia bancaria o Personal Pay al alias calculadoradeprecios. El precio es $30.000 único.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Qué es el grupo "Contadora en Línea"? <span>+</span></div>
+      <div class="faq-a">Es un grupo exclusivo de WhatsApp donde podés hacerme consultas diarias sobre precios, costos, impuestos y todo lo relacionado con las finanzas de tu emprendimiento. Soy contadora y abogada, y estoy ahí para responderte.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Las actualizaciones tienen costo adicional? <span>+</span></div>
+      <div class="faq-a">No. Con el pago único tenés acceso a todas las actualizaciones futuras. Cada mejora llega automáticamente a tu dispositivo.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+  <div class="cta-final-inner fade-up">
+    <h2>Empezá a cobrar<br>lo que <em>realmente vale</em><br>tu trabajo</h2>
+    <p>+500 emprendedoras ya calculan bien sus precios.<br>¿Cuándo empezás vos?</p>
+    <a href="https://wa.me/5491126883318?text=Hola%20Ali%2C%20quiero%20comprar%20la%20Calculadora%20de%20Precios%20%F0%9F%96%A4" target="_blank" class="btn-gold">Quiero mi calculadora — $30.000 →</a>
+    <p style="font-size:12px;color:var(--gray-dark);margin-top:20px;">Pago único · Acceso de por vida · Instalación en 2 minutos</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Ali <span>Albelo</span></div>
+  <div class="footer-sub">Especialista en precios y rentabilidad</div>
+  <div class="footer-links">
+    <a href="#como-funciona">Cómo funciona</a>
+    <a href="#precio">Precio</a>
+    <a href="https://wa.me/5491126883318" target="_blank">WhatsApp</a>
+    <a href="bit.ly/ali-calculadora" target="_blank">Entrar a la app</a>
+  </div>
+  <p class="footer-legal">© 2026 Ali Albelo. Todos los derechos reservados. Marca registrada.<br>Queda prohibida la reproducción o distribución de este producto sin autorización expresa.</p>
+</footer>
+
+<!-- STICKY CTA MOBILE -->
+<div class="sticky-cta">
+  <a href="https://wa.me/5491126883318?text=Hola%20Ali%2C%20quiero%20comprar%20la%20Calculadora%20de%20Precios%20%F0%9F%96%A4" target="_blank">Comprar ahora — $30.000 →</a>
+</div>
+
+<script>
+// FAQ
+function toggleFaq(el){
+  const a = el.querySelector('.faq-a');
+  const s = el.querySelector('.faq-q span');
+  const isOpen = a.classList.contains('show');
+  document.querySelectorAll('.faq-a').forEach(x=>x.classList.remove('show'));
+  document.querySelectorAll('.faq-q span').forEach(x=>x.classList.remove('open'));
+  if(!isOpen){ a.classList.add('show'); s.classList.add('open'); }
+}
+
+// Scroll animations
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{ threshold:0.1 });
+document.querySelectorAll('.fade-up').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>
